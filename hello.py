@@ -20,6 +20,7 @@ def generate_plots():
 
     # Load the JSON key from an environment variable
     service_account_json = os.getenv('GCP_SERVICE_ACCOUNT_JSON')
+    spreadsheet_name = os.environ.get('SPREADSHEET_NAME', 'Running Log')
 
     # Parse the JSON key
     service_account_info = json.loads(service_account_json)
@@ -33,7 +34,7 @@ def generate_plots():
     client = gspread.authorize(creds)
 
     # Open the Google Sheet
-    spreadsheet = client.open("Running Log")
+    spreadsheet = client.open(spreadsheet_name)
 
     # Initialize an empty DataFrame to store all data
     all_data = pd.DataFrame()
