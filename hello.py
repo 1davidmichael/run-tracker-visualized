@@ -19,16 +19,15 @@ def generate_plots():
     ]
 
     # Load the JSON key from an environment variable
-    service_account_json = os.getenv('GCP_SERVICE_ACCOUNT_JSON')
-    spreadsheet_name = os.environ.get('SPREADSHEET_NAME', 'Running Log')
+    service_account_json = os.getenv("GCP_SERVICE_ACCOUNT_JSON")
+    spreadsheet_name = os.environ.get("SPREADSHEET_NAME", "Running Log")
 
     # Parse the JSON key
     service_account_info = json.loads(service_account_json)
 
     # Create credentials using the parsed JSON key
     creds = ServiceAccountCredentials.from_json_keyfile_dict(
-        service_account_info,
-        scope
+        service_account_info, scope
     )
 
     client = gspread.authorize(creds)
