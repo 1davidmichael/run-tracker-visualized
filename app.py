@@ -222,9 +222,13 @@ def generate_plots(year=None):
 
 
 def get_html(
-    plot_pace_html, plot_hr_html, plot_distance_html, plot_pace_hr_time_3d_html, plot_miles_per_week_html
+    plot_pace_html,
+    plot_hr_html,
+    plot_distance_html,
+    plot_pace_hr_time_3d_html,
+    plot_miles_per_week_html,
 ):
-        # Bootstrap CSS and JS links
+    # Bootstrap CSS and JS links
     bootstrap_css = (
         '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" '
         'rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">'
@@ -292,6 +296,7 @@ def get_html(
 
     return html_content
 
+
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots():
     return """User-agent: *
@@ -309,7 +314,13 @@ async def root():
         plot_miles_per_week_html,
     ) = generate_plots()
 
-    return get_html(plot_pace_html, plot_hr_html, plot_distance_html, plot_pace_hr_time_3d_html, plot_miles_per_week_html)
+    return get_html(
+        plot_pace_html,
+        plot_hr_html,
+        plot_distance_html,
+        plot_pace_hr_time_3d_html,
+        plot_miles_per_week_html,
+    )
 
 
 @app.get("/{year}", response_class=HTMLResponse)
@@ -322,4 +333,10 @@ async def year(year: int):
         plot_miles_per_week_html,
     ) = generate_plots(year)
 
-    return get_html(plot_pace_html, plot_hr_html, plot_distance_html, plot_pace_hr_time_3d_html, plot_miles_per_week_html)
+    return get_html(
+        plot_pace_html,
+        plot_hr_html,
+        plot_distance_html,
+        plot_pace_hr_time_3d_html,
+        plot_miles_per_week_html,
+    )
