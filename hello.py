@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
@@ -216,6 +216,13 @@ def generate_plots():
         fig_pace_hr_time_3d.to_html(full_html=False),
         fig_miles_per_week.to_html(full_html=False),
     )
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def robots():
+    return """User-agent: *
+Disallow: /
+"""
 
 
 @app.get("/", response_class=HTMLResponse)
