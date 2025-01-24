@@ -14,3 +14,8 @@ dependencies = [
     "plotly>=5.24.1",
     "uvicorn>=0.34.0",
 ]
+
+[dependency-groups]
+dev = [
+    "black>=24.10.0",
+]
