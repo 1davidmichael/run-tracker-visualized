@@ -61,6 +61,10 @@ def generate_plots():
     # Calculate trend line values
     trend_line = slope * dates_ordinal + intercept
 
+    # Aggregate data by week
+    all_data['Week'] = all_data['Date'].dt.to_period('W').apply(lambda r: r.start_time)
+    weekly_data = all_data.groupby('Week').agg({'Distance': 'sum'}).reset_index()
+
     # Create a Plotly figure for Pace
     fig_pace = go.Figure()
 
@@ -122,13 +126,93 @@ def generate_plots():
                                           zaxis=dict(title='Date', tickvals=tickvals, ticktext=ticktext)
                                       ))
 
+    # Create a Plotly figure for Miles Run Per Week
+    fig_miles_per_week = go.Figure()
+
+    # Add bar chart for Miles Run Per Week
+    fig_miles_per_week.add_trace(go.Bar(x=weekly_data['Week'], y=weekly_data['Distance'], name='Miles Run Per Week', marker=dict(color='blue')))
+
+    # Update layout for Miles Per Week plot
+    fig_miles_per_week.update_layout(title='Miles Run Per Week',
+                                     xaxis_title='Week',
+                                     yaxis_title='Miles')
+
     # Return the HTML representation of the plots
     return (fig_pace.to_html(full_html=False),
             fig_hr.to_html(full_html=False),
             fig_distance.to_html(full_html=False),
-            fig_pace_hr_time_3d.to_html(full_html=False))
+            fig_pace_hr_time_3d.to_html(full_html=False),
+            fig_miles_per_week.to_html(full_html=False))
+
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    plot_pace_html, plot_hr_html, plot_distance_html, plot_pace_hr_time_3d_html = generate_plots()
-    return f"<html><body>{plot_pace_html}<br><br>{plot_hr_html}<br><br>{plot_distance_html}<br><br>{plot_pace_hr_time_3d_html}</body></html>"
+    plot_pace_html, plot_hr_html, plot_distance_html, plot_pace_hr_time_3d_html, plot_miles_per_week_html = generate_plots()
+
+    # Bootstrap CSS and JS links
+    bootstrap_css = (
+        '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" '
+        'rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">'
+    )
+    bootstrap_js = (
+        '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" '
+        'integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>'
+    )
+
+    # HTML content with Bootstrap classes and navigation
+    html_content = f"""
+    <html>
+    <head>
+        {bootstrap_css}
+    </head>
+    <body class="container mt-5">
+        <!-- Navigation Bar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">Graph Dashboard</a>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#pace">Pace Graph</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#hr">Heart Rate Graph</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#distance">Distance Graph</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#pace-hr-time-3d">3D Pace/HR/Time Graph</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#miles-per-week">Miles Per Week Graph</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Graph Sections -->
+        <div class="row">
+            <div class="col-12" id="pace">
+                {plot_pace_html}
+            </div>
+            <div class="col-12 mt-4" id="hr">
+                {plot_hr_html}
+            </div>
+            <div class="col-12 mt-4" id="distance">
+                {plot_distance_html}
+            </div>
+            <div class="col-12 mt-4" id="pace-hr-time-3d">
+                {plot_pace_hr_time_3d_html}
+            </div>
+            <div class="col-12 mt-4" id="miles-per-week">
+                {plot_miles_per_week_html}
+            </div>
+        </div>
+        {bootstrap_js}
+    </body>
+    </html>
+    """
+
+    return html_content
