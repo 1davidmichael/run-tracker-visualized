@@ -5,6 +5,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
+import os
+import json
 
 app = FastAPI()
 
@@ -15,9 +17,19 @@ def generate_plots():
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive",
     ]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(
-        "/Users/david.michael/.config/gspread/service_account.json", scope
+
+    # Load the JSON key from an environment variable
+    service_account_json = os.getenv('GCP_SERVICE_ACCOUNT_JSON')
+
+    # Parse the JSON key
+    service_account_info = json.loads(service_account_json)
+
+    # Create credentials using the parsed JSON key
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(
+        service_account_info,
+        scope
     )
+
     client = gspread.authorize(creds)
 
     # Open the Google Sheet
