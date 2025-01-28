@@ -1,39 +1,31 @@
-# Stage 1: Dependency Installation
+# Install uv
 FROM python:3.13-slim AS builder
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Set working directory inside the container
+# Change the working directory to the `app` directory
 WORKDIR /app
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-editable
 
-# Install uv dependency manager
-RUN pip install --no-cache-dir uv
+# Copy the project into the intermediate image
+ADD . /app
 
-# Copy the dependency configuration files
-COPY pyproject.toml uv.lock ./
+# Sync the project
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-editable
 
-# Install dependencies in a virtual environment managed by uv
-RUN uv sync --no-dev
-
-# Stage 2: Runtime Environment
 FROM python:3.13-slim
 
-# Set working directory inside the container
-WORKDIR /app
-
-# Copy the installed dependencies from the builder stage
-COPY --from=builder /app /app
-
-# Copy the FastAPI application code
-COPY . /app
+# Copy the environment, but not the source code
+COPY --from=builder --chown=app:app /app /app
 
 ENV PATH="/app/.venv/bin:$PATH"
 
+WORKDIR  /app
 # Expose the application port (default is 8000)
 EXPOSE 8000
 
